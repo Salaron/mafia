@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+        <ContainerUser>app</ContainerUser>
+    </PropertyGroup>
+</Project>

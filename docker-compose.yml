@@ -1,0 +1,29 @@
+version: '3.5'
+
+services:
+  postgres:
+    image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: masterkey
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    restart: unless-stopped
+
+  stats_bot:
+    image: mafia-stats-bot:1.0.0
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+  
+  user_bot:
+    image: mafia-user-bot:1.0.0
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
+volumes:
+  postgres:

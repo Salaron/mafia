@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <ContainerRepository>mafia-user-bot</ContainerRepository>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+        <PackageReference Include="WTelegramClient" Version="3.5.7"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0"/>
+        <PackageReference Include="EFCore.NamingConventions" Version="7.0.2"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.11"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11"/>
+        <PackageReference Include="Microsoft.NET.Build.Containers" Version="7.0.401"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MafiaLib\MafiaLib.csproj"/>
+    </ItemGroup>
+</Project>
