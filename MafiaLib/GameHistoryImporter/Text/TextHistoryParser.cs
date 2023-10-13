@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using MafiaLib.Database;
 using MafiaLib.Models;
-using Microsoft.Extensions.Options;
 
 namespace MafiaLib.GameHistoryImporter;
 
@@ -11,7 +10,7 @@ public partial class TextHistoryParser(AppDbContext dbContext)
     private int _currentRoleIdx;
 
     public HistoryParseResult Parse(string messageText, long chatId, DateTime messageTime,
-        IEnumerable<MessageEntity> entities)
+        IEnumerable<MentionedUser> mentionedUsers)
     {
         var endGameText = messageText.Split(Environment.NewLine).Last();
         var gameDuration = ParseGameDuration(endGameText);
@@ -37,7 +36,7 @@ public partial class TextHistoryParser(AppDbContext dbContext)
             if (!line.Contains('-'))
                 continue;
 
-            var gameRole = ParseRole(line, entities);
+            var gameRole = ParseRole(line, mentionedUsers);
             if (gameRole == null)
                 continue;
 
@@ -55,13 +54,13 @@ public partial class TextHistoryParser(AppDbContext dbContext)
         return historyParseResult;
     }
 
-    private GameRole ParseRole(string line, IEnumerable<MessageEntity> entities)
+    private GameRole ParseRole(string line, IEnumerable<MentionedUser> mentionedUsers)
     {
         var (name, role) = line.Split("-").Select(v => v.Trim());
 
         var user = default(TgUser);
-        var mentionEntity = entities.Where(e => e.Type == "mention").Skip(_currentRoleIdx).FirstOrDefault();
-        if (mentionEntity == null)
+        var mentionedUser = mentionedUsers.Skip(_currentRoleIdx).FirstOrDefault();
+        if (mentionedUser == null)
         {
             var userFromDb = dbContext.Users.FirstOrDefault(u => u.Name.Contains(name));
             if (userFromDb == null)
@@ -69,14 +68,14 @@ public partial class TextHistoryParser(AppDbContext dbContext)
 
             user = userFromDb;
         }
-        else if (!_userIdsToEntityMap.ContainsKey(mentionEntity.UserId))
+        else if (!_userIdsToEntityMap.ContainsKey(mentionedUser.UserId))
         {
             var newUser = new TgUser
             {
-                UserId = mentionEntity.UserId,
+                UserId = mentionedUser.UserId,
                 Name = name
             };
-            _userIdsToEntityMap.TryAdd(mentionEntity.UserId, newUser);
+            _userIdsToEntityMap.TryAdd(mentionedUser.UserId, newUser);
             user = newUser;
         }
 

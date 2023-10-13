@@ -6,28 +6,41 @@ using WTelegram;
 
 namespace MafiaUserBot.UpdateHandlers;
 
-internal class GameResultSaver(HistoryImporter historyImporter, IOptions<UserBotConfig> config) : IUpdateHandler
+internal class GameResultSaver : IUpdateHandler
 {
+    private readonly HistoryImporter _historyImporter;
+    private readonly IOptions<UserBotConfig> _config;
+
+    public GameResultSaver(HistoryImporter historyImporter, IOptions<UserBotConfig> config)
+    {
+        _historyImporter = historyImporter;
+        _config = config;
+    }
+
     public async Task HandleAsync(Client client, Update update, UserChatsStorage chatsStorage)
     {
         if (update is not UpdateNewMessage { message: Message message })
             return;
 
-        var isMessageFromMafiaBot = config.Value.MafiaBotIds.Contains(message.From.ID.ToString()) &&
+        var isMessageFromMafiaBot = _config.Value.MafiaBotIds.Contains(message.From.ID.ToString()) &&
                                     message.message.Contains("Игра окончена");
-        if (isMessageFromMafiaBot)
+        if (!isMessageFromMafiaBot)
             return;
 
-        var entities = message.entities.Select(entity => new MafiaLib.GameHistoryImporter.MessageEntity
-        {
-            Type = entity.Type,
-            // TODO: проверить типы, возможно есть ещё какой-то mention, из-за которого не все юзеры парсятся
-            UserId = entity is MessageEntityMentionName mention ? mention.user_id : 0
-        });
-
-        await historyImporter.ImportAsync(message.message, message.Peer.ID, message.date, entities);
-
         var peer = chatsStorage.GetInputPeer(message.Peer.ID);
+
+        var chat = await client.GetFullChat(peer);
+        var mentionedUsers = chat.users
+            .Where(u => message.message.Contains(u.Value.first_name))
+            .Select(u => new MentionedUser
+            {
+                UserId = u.Key,
+                FullName = (u.Value.first_name ?? string.Empty) + (u.Value.last_name ?? string.Empty),
+                UserName = u.Value.MainUsername
+            });
+
+        await _historyImporter.ImportAsync(message.message, message.Peer.ID, message.date, mentionedUsers);
+
         await client.SendMessageAsync(peer, "Я записал \u270d\ufe0f");
     }
 }

@@ -31,7 +31,7 @@ public class HistoryImporter
     }
 
     public async Task ImportAsync(string messageText, long chatId, DateTime messageTime,
-        IEnumerable<MessageEntity> entities)
+        IEnumerable<MentionedUser> entities)
     {
         var parseResult = _textHistoryParser.Parse(messageText, chatId, messageTime, entities);
 
