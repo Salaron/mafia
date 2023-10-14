@@ -1,0 +1,5 @@
+<Project>
+    <ItemGroup Condition="'$(Configuration.toUpper())' != 'DEBUG'">
+        <Content Remove="appsettings.Development.json" />
+    </ItemGroup>
+</Project>
