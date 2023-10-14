@@ -16,6 +16,8 @@ builder.Configuration
     .AddJsonFile("appsettings.Development.json", optional: true)
     .AddEnvironmentVariables();
 
+Environment.SetEnvironmentVariable("LogsDir", AppContext.BaseDirectory);
+
 builder.Services.AddSerilog((_, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(builder.Configuration));
 

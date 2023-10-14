@@ -13,15 +13,22 @@ services:
 
   stats_bot:
     image: mafia-stats-bot:1.0.0
+    user: root
     env_file:
       - .env
+    volumes:
+      - ${PWD}/Logs/StatsBot:/app/Logs
     depends_on:
       - postgres
   
   user_bot:
     image: mafia-user-bot:1.0.0
+    user: root
     env_file:
       - .env
+    volumes:
+      - ${PWD}/WTelegram.session:/app/WTelegram.session
+      - ${PWD}/Logs/UserBot:/app/Logs
     depends_on:
       - postgres
 
