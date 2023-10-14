@@ -12,6 +12,10 @@ using Telegram.Bot.Polling;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Configuration
+    .AddJsonFile("appsettings.Development.json", optional: true)
+    .AddEnvironmentVariables();
+
 builder.Services.AddSerilog((_, loggerConfiguration) =>
     loggerConfiguration.ReadFrom.Configuration(builder.Configuration));
 
