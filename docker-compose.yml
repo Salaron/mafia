@@ -2,17 +2,21 @@ version: '3.5'
 
 services:
   postgres:
+    container_name: mafiabot_postgres
     image: postgres:14-alpine@sha256:28407a9961e76f2d285dc6991e8e48893503cc3836a4755bbc2d40bcc272a441
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: masterkey
+      POSTGRES_USER: ${PgDatabaseUser}
+      POSTGRES_PASSWORD: ${PgDatabasePassword}
       PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
     restart: unless-stopped
 
   stats_bot:
-    image: mafia-stats-bot:1.0.0
+    container_name: mafiabot_statsbot
+    image: mafia-stats-bot:latest
     user: root
     env_file:
       - .env
@@ -20,9 +24,10 @@ services:
       - ${PWD}/Logs/StatsBot:/app/Logs
     depends_on:
       - postgres
-  
+
   user_bot:
-    image: mafia-user-bot:1.0.0
+    container_name: mafiabot_userbot
+    image: mafia-user-bot:latest
     user: root
     env_file:
       - .env
