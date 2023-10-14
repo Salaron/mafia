@@ -6,23 +6,15 @@ using WTelegram;
 
 namespace MafiaUserBot.UpdateHandlers;
 
-internal class GameResultSaver : IUpdateHandler
+internal class GameResultSaver(HistoryImporter historyImporter, IOptions<UserBotConfig> config)
+    : IUpdateHandler
 {
-    private readonly HistoryImporter _historyImporter;
-    private readonly IOptions<UserBotConfig> _config;
-
-    public GameResultSaver(HistoryImporter historyImporter, IOptions<UserBotConfig> config)
-    {
-        _historyImporter = historyImporter;
-        _config = config;
-    }
-
     public async Task HandleAsync(Client client, Update update, UserChatsStorage chatsStorage)
     {
         if (update is not UpdateNewMessage { message: Message message })
             return;
 
-        var isMessageFromMafiaBot = _config.Value.MafiaBotIds.Contains(message.From.ID.ToString()) &&
+        var isMessageFromMafiaBot = config.Value.MafiaBotIds.Contains(message.From.ID.ToString()) &&
                                     message.message.Contains("Игра окончена");
         if (!isMessageFromMafiaBot)
             return;
@@ -41,7 +33,7 @@ internal class GameResultSaver : IUpdateHandler
 
         // in case of group migrated to supergroup
         var groupId = chat.chats.FirstOrDefault(c => c.Value.IsActive && c.Value.IsGroup).Key;
-        await _historyImporter.ImportAsync(message.message, groupId, message.date, mentionedUsers);
+        await historyImporter.ImportAsync(message.message, groupId, message.date, mentionedUsers);
 
         await client.SendMessageAsync(peer, "Я записал \u270d\ufe0f");
     }

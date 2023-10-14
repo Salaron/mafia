@@ -28,7 +28,7 @@ public class ImportCommandHandler(HistoryImporter historyImporter) : BaseCommand
         ms.Seek(0, SeekOrigin.Begin);
         using var streamReader = new StreamReader(ms);
         var chatHistoryJsonString = await streamReader.ReadToEndAsync(token);
-        
+
         // TODO: json validation
         await historyImporter.ImportAsync(chatHistoryJsonString);
 

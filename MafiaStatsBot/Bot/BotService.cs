@@ -16,14 +16,13 @@ public class BotService(ITelegramBotClient botClient,
     {
         var errorCount = 0;
         while (!cancellationToken.IsCancellationRequested)
-        {
             try
             {
                 using var scope = serviceProvider.CreateScope();
 
                 var receiverOptions = new ReceiverOptions
                 {
-                    AllowedUpdates = Array.Empty<UpdateType>(),
+                    AllowedUpdates = Array.Empty<UpdateType>()
                 };
 
                 var me = await botClient.GetMeAsync(cancellationToken);
@@ -34,9 +33,9 @@ public class BotService(ITelegramBotClient botClient,
                 await RegisterBotCommandsAsync(commandHandlers);
                 // Start receiving updates
                 await botClient.ReceiveAsync(
-                    updateHandler: scope.ServiceProvider.GetRequiredService<IUpdateHandler>(),
-                    receiverOptions: receiverOptions,
-                    cancellationToken: cancellationToken);
+                    scope.ServiceProvider.GetRequiredService<IUpdateHandler>(),
+                    receiverOptions,
+                    cancellationToken);
             }
             catch (Exception ex)
             {
@@ -50,7 +49,6 @@ public class BotService(ITelegramBotClient botClient,
                     throw;
                 }
             }
-        }
     }
 
     private async Task RegisterBotCommandsAsync(IEnumerable<ICommandHandler> commandHandlers)

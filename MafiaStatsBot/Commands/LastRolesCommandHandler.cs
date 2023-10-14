@@ -44,7 +44,7 @@ public class LastRolesCommandHandler(StatsProvider statsProvider) : BaseCommandH
             var localDate = userRole.GameResult.GameStartDate.ToLocalTime();
             response += $"{userRole.Role} \\- {localDate:d MMMM, HH:mm}{Environment.NewLine}";
         }
-        
+
         await botClient.SendTextMessageAsync(message.Chat.Id, response, disableNotification: true,
             parseMode: ParseMode.MarkdownV2, cancellationToken: token);
     }

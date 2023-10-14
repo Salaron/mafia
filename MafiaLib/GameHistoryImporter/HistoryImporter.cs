@@ -19,11 +19,12 @@ public class HistoryImporter
 
     public async Task ImportAsync(string chatHistoryJsonString)
     {
-        var parsedChatHistory = JsonSerializer.Deserialize<ExportChatHistoryEntry>(chatHistoryJsonString, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = false,
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-        });
+        var parsedChatHistory = JsonSerializer.Deserialize<ExportChatHistoryEntry>(chatHistoryJsonString,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = false,
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+            });
 
         var parseResult = _jsonHistoryParser.Parse(parsedChatHistory);
 

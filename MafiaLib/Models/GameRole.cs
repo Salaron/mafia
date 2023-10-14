@@ -9,7 +9,7 @@ public class GameRole
     public int GameResultId { get; set; }
     public int UserId { get; set; }
     public string Role { get; set; }
-    
+
     public GameResult GameResult { get; set; }
     public TgUser User { get; set; }
 }

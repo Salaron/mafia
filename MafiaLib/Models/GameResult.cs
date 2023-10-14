@@ -11,8 +11,8 @@ public class GameResult
     public bool IsMafiaWon { get; set; }
     public DateTime GameStartDate { get; set; }
     public DateTime GameEndDate { get; set; }
-    
+
     public virtual List<TgUser> Winners { get; set; }
-    
+
     public virtual List<GameRole> Roles { get; set; }
 }

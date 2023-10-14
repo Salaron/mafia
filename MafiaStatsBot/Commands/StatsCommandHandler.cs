@@ -28,7 +28,7 @@ public class StatsCommandHandler(StatsProvider statsProvider) : BaseCommandHandl
         {
             var userName = message.Text.Substring(message.EntityValues.First().Length + 1);
             var user = users.FirstOrDefault(user => user.Name.Contains(userName));
-        
+
             if (user != null)
                 userId = user.UserId;
         }
@@ -45,9 +45,7 @@ public class StatsCommandHandler(StatsProvider statsProvider) : BaseCommandHandl
                         """;
 
         foreach (var (role, count) in userStats.GameRoleCountMap.OrderBy(x => x.Value))
-        {
             response += $"{role} \\- {count}{Environment.NewLine}";
-        }
 
         await botClient.SendTextMessageAsync(message.Chat.Id, response, disableNotification: true,
             parseMode: ParseMode.MarkdownV2, cancellationToken: token);
