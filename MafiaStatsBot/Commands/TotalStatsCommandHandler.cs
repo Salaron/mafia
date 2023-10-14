@@ -18,14 +18,14 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
 
     public override async Task ExecuteAsync(ITelegramBotClient botClient, Message message, CancellationToken token)
     {
-        var stats = await statsProvider.GetStatsAsync(message.Chat.Id);
+        var chatId = message.MigrateFromChatId ?? message.Chat.Id;
+
+        var stats = await statsProvider.GetStatsAsync(chatId);
 
         var template = $"""
                         Всего игр сыграно: {stats.TotalPlayCount}
                         Из них выйграла мафия: {stats.MafiaWinCount}
                         Среднее время одной игры: {stats.AverageGameDuration:c}
-                        
-                        Топ крутых:
                         """;
 
         await botClient.SendTextMessageAsync(message.Chat.Id, template, cancellationToken: token);

@@ -39,7 +39,9 @@ internal class GameResultSaver : IUpdateHandler
                 UserName = u.Value.MainUsername
             });
 
-        await _historyImporter.ImportAsync(message.message, message.Peer.ID, message.date, mentionedUsers);
+        // in case of group migrated to supergroup
+        var groupId = chat.chats.FirstOrDefault(c => c.Value.IsActive && c.Value.IsGroup).Key;
+        await _historyImporter.ImportAsync(message.message, groupId, message.date, mentionedUsers);
 
         await client.SendMessageAsync(peer, "Я записал \u270d\ufe0f");
     }

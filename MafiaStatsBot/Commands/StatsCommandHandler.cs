@@ -19,8 +19,10 @@ public class StatsCommandHandler(StatsProvider statsProvider) : BaseCommandHandl
 
     public override async Task ExecuteAsync(ITelegramBotClient botClient, Message message, CancellationToken token)
     {
-        var users = await statsProvider.GetUsersAsync(message.Chat.Id);
+        var chatId = message.MigrateFromChatId ?? message.Chat.Id;
         var userId = message.From.Id;
+
+        var users = await statsProvider.GetUsersAsync(chatId);
 
         if (message.Text.Length > message.EntityValues.First().Length)
         {
@@ -31,7 +33,7 @@ public class StatsCommandHandler(StatsProvider statsProvider) : BaseCommandHandl
                 userId = user.UserId;
         }
 
-        var userStats = await statsProvider.GetStatsAsync(message.Chat.Id, userId);
+        var userStats = await statsProvider.GetStatsAsync(chatId, userId);
         var response = $"""
                         [{userStats.User.Name}](tg://user?id={userStats.User.UserId})
 

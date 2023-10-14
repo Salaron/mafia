@@ -19,7 +19,9 @@ public class LastRolesCommandHandler(StatsProvider statsProvider) : BaseCommandH
 
     public override async Task ExecuteAsync(ITelegramBotClient botClient, Message message, CancellationToken token)
     {
-        var users = await statsProvider.GetUsersAsync(message.Chat.Id);
+        var chatId = message.MigrateFromChatId ?? message.Chat.Id;
+
+        var users = await statsProvider.GetUsersAsync(chatId);
 
         var userId = message.From.Id;
         // TODO: сделать какой-нибудь нормальный парсер аргументов
@@ -32,7 +34,7 @@ public class LastRolesCommandHandler(StatsProvider statsProvider) : BaseCommandH
                 userId = user.UserId;
         }
 
-        var userRoles = await statsProvider.GetRolesAsync(message.Chat.Id, userId);
+        var userRoles = await statsProvider.GetRolesAsync(chatId, userId);
         if (!userRoles.Any())
             return;
 
