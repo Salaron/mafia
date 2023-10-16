@@ -97,9 +97,9 @@ public partial class TextHistoryParser(AppDbContext dbContext)
 
         var gameDurationInSeconds = 0;
         if (minutesRegex.Success)
-            gameDurationInSeconds += int.Parse(minutesRegex.Value) * 60;
+            gameDurationInSeconds += int.Parse(minutesRegex.Groups[1].Value) * 60;
         if (secondsRegex.Success)
-            gameDurationInSeconds += int.Parse(secondsRegex.Value);
+            gameDurationInSeconds += int.Parse(minutesRegex.Groups[1].Value);
 
         return TimeSpan.FromSeconds(gameDurationInSeconds);
     }
