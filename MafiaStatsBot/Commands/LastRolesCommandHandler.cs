@@ -19,7 +19,9 @@ public class LastRolesCommandHandler(StatsProvider statsProvider) : BaseCommandH
 
     public override async Task ExecuteAsync(ITelegramBotClient botClient, Message message, CancellationToken token)
     {
-        var chatId = message.MigrateFromChatId ?? message.Chat.Id;
+        var chatId = message.Chat.Id;
+        if (message.Chat.Type == ChatType.Supergroup)
+            chatId = (message.Chat.Id + 1000000000000) * -1;
 
         var users = await statsProvider.GetUsersAsync(chatId);
 

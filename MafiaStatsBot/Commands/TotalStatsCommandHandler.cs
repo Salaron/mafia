@@ -2,6 +2,7 @@ using MafiaLib.Statistic;
 using MafiaStatsBot.Bot;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace MafiaStatsBot.Commands;
 
@@ -18,7 +19,9 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
 
     public override async Task ExecuteAsync(ITelegramBotClient botClient, Message message, CancellationToken token)
     {
-        var chatId = message.MigrateFromChatId ?? message.Chat.Id;
+        var chatId = message.Chat.Id;
+        if (message.Chat.Type == ChatType.Supergroup)
+            chatId = (message.Chat.Id + 1000000000000) * -1;
 
         var stats = await statsProvider.GetStatsAsync(chatId);
 
