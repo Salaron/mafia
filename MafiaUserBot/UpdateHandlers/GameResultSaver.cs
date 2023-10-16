@@ -14,26 +14,34 @@ internal class GameResultSaver(HistoryImporter historyImporter, IOptions<UserBot
         if (update is not UpdateNewMessage { message: Message message })
             return;
 
-        var isMessageFromMafiaBot = config.Value.MafiaBotIds.Contains(message.From.ID.ToString()) &&
+        var isMessageFromMafiaBot = config.Value.MafiaBotIds.Any(id => id.Contains(message.From.ID.ToString())) &&
                                     message.message.Contains("Игра окончена");
         if (!isMessageFromMafiaBot)
             return;
 
         var peer = chatsStorage.GetInputPeer(message.Peer.ID);
+        var channelParticipants = await client.Channels_GetAllParticipants((Channel)chatsStorage.Chats[peer.ID]);
 
-        var chat = await client.GetFullChat(peer);
-        var mentionedUsers = chat.users
-            .Where(u => message.message.Contains(u.Value.first_name))
-            .Select(u => new MentionedUser
+        var roles = message.ToString().Split(Environment.NewLine);
+
+        var mentionedUsers = new List<MentionedUser>();
+        foreach (var line in roles)
+        {
+            if (!line.Contains('-'))
+                continue;
+
+            var user = channelParticipants.users.Values.FirstOrDefault(u => line.Contains(u.first_name));
+            if (user == null)
+                continue;
+            mentionedUsers.Add(new MentionedUser
             {
-                UserId = u.Key,
-                FullName = (u.Value.first_name ?? string.Empty) + (u.Value.last_name ?? string.Empty),
-                UserName = u.Value.MainUsername
+                UserId = user.ID,
+                FullName = user.first_name,
+                UserName = user.MainUsername
             });
+        }
 
-        // in case of group migrated to supergroup
-        var groupId = chat.chats.FirstOrDefault(c => c.Value.IsActive && c.Value.IsGroup).Key;
-        await historyImporter.ImportAsync(message.message, groupId, message.date, mentionedUsers);
+        await historyImporter.ImportAsync(message.message, peer.ID, message.date, mentionedUsers);
 
         await client.SendMessageAsync(peer, "Я записал \u270d\ufe0f");
     }
