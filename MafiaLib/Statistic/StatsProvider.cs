@@ -48,12 +48,52 @@ public class StatsProvider(AppDbContext appDbContext)
 
         var averageGameDurationInSeconds = gameStats.Select(s => (s.GameEndDate - s.GameStartDate).TotalSeconds)
             .Average();
+
+        // ѕользователи чата, у которых больше 5 побед
+        var usersFromChat = appDbContext.GameResults
+            .AsNoTracking()
+            .Where(result => result.ChatId == chatId)
+            .Include(result => result.Roles)
+            .SelectMany(result => result.Roles)
+            .Include(role => role.User)
+            .Select(role => role.User)
+            .Distinct()
+            .Include(user => user.WinGames)
+            .Where(user => user.WinGames.Count() > 5);
+
+        var userTop = new List<(double Winrate, TgUser User)>();
+
+        foreach (var user in usersFromChat)
+        {
+            var playCount = await appDbContext.GameResults
+                .AsNoTracking()
+                .Include(result => result.Roles)
+                .ThenInclude(role => role.User)
+                .Include(result => result.Winners)
+                .Where(result => result.ChatId == chatId)
+                .GroupBy(result => result.ChatId)
+                .Select(results => new
+                {
+                    WinCount = results.Count(result => result.Winners.Select(user => user.UserId).Contains(user.UserId)),
+                    PlayCount = results.Count(result =>
+                        result.Roles.Select(user => user.User).Select(r => r.UserId).Contains(user.UserId))
+                })
+                .FirstAsync();
+
+            var winrate = (double)playCount.WinCount / playCount.PlayCount;
+
+            userTop.Add(new(winrate, user));
+        }
+
+        userTop = userTop.OrderByDescending(x => x.Winrate).ToList();
+
         var statsByChat = new StatsByChat
         {
             ChatId = chatId,
             TotalPlayCount = gameStats.Count,
             MafiaWinCount = gameStats.Count(s => s.IsMafiaWon),
-            AverageGameDuration = TimeSpan.FromSeconds(averageGameDurationInSeconds)
+            AverageGameDuration = TimeSpan.FromSeconds(averageGameDurationInSeconds),
+            UserTop = userTop
         };
 
         return statsByChat;

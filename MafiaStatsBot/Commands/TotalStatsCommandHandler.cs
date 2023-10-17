@@ -25,10 +25,17 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
 
         var stats = await statsProvider.GetStatsAsync(chatId);
 
+        int i = 0;
+
+        var topTemplate = string.Join('\n', stats.UserTop.Select(x => $"{++i}\t{Math.Round(x.Winrate * 100, 2)}%\t[{x.User.Name}]()tg://user?id={x.User.Id}"));
+
         var template = $"""
                         Всего игр сыграно: {stats.TotalPlayCount}
                         Из них выйграла мафия: {stats.MafiaWinCount}
                         Среднее время одной игры: {stats.AverageGameDuration:c}
+
+                        Топ (больше 5 побед):
+                        {topTemplate}
                         """;
 
         await botClient.SendTextMessageAsync(message.Chat.Id, template, cancellationToken: token);
