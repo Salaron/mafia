@@ -46,6 +46,9 @@ public class StatsProvider(AppDbContext appDbContext)
             .Include(result => result.Roles)
             .ToListAsync();
 
+        if (!gameStats.Any())
+            return new StatsByChat() { UserTop = new() };
+
         var averageGameDurationInSeconds = gameStats.Select(s => (s.GameEndDate - s.GameStartDate).TotalSeconds)
             .Average();
         
