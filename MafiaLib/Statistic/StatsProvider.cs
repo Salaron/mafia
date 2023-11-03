@@ -48,44 +48,35 @@ public class StatsProvider(AppDbContext appDbContext)
 
         var averageGameDurationInSeconds = gameStats.Select(s => (s.GameEndDate - s.GameStartDate).TotalSeconds)
             .Average();
+        
+        // === Compute user top ===
+        // Get users and their statistic
+        var usersWithStatsFromChat = (await GetUsersAsync(chatId))
+            .Select(async x => await GetStatsAsync(chatId, x.UserId))
+            .Select(x => x.Result);
 
-        // Get users with 6 wins or more
-        var usersFromChat = appDbContext.GameResults
-            .AsNoTracking()
-            .Where(result => result.ChatId == chatId)
-            .Include(result => result.Roles)
-            .SelectMany(result => result.Roles)
-            .Include(role => role.User)
-            .Select(role => role.User)
-            .Distinct()
-            .Include(user => user.WinGames)
-            .Where(user => user.WinGames.Count() > 5);
+        // find maximum of parameters (games, wins, number of roles) for all users
+        int maxGames = usersWithStatsFromChat.Max(x => x.PlayCount);
+        int maxWins = usersWithStatsFromChat.Max(x => x.WinCount);
+        int maxRoles = usersWithStatsFromChat.Max(x => x.GameRoleCountMap.Count);
 
-        var userTop = new List<(double Winrate, TgUser User)>();
+        // remove rarely playing users
+        usersWithStatsFromChat = usersWithStatsFromChat.Where(x => (double)x.PlayCount / maxGames > 0.05);
 
-        foreach (var user in usersFromChat)
+        var userTop = new List<(TgUser user, int rating)>();
+
+        foreach (var user in usersWithStatsFromChat)
         {
-            var playCount = await appDbContext.GameResults
-                .AsNoTracking()
-                .Include(result => result.Roles)
-                .ThenInclude(role => role.User)
-                .Include(result => result.Winners)
-                .Where(result => result.ChatId == chatId)
-                .GroupBy(result => result.ChatId)
-                .Select(results => new
-                {
-                    WinCount = results.Count(result => result.Winners.Select(user => user.UserId).Contains(user.UserId)),
-                    PlayCount = results.Count(result =>
-                        result.Roles.Select(user => user.User).Select(r => r.UserId).Contains(user.UserId))
-                })
-                .FirstAsync();
+            double kGames = (double)user.PlayCount / maxGames;
+            double kWins = (double)user.WinCount / maxWins;
+            double kRoles = 0.5 * user.GameRoleCountMap.Count / maxRoles;
 
-            var winrate = (double)playCount.WinCount / playCount.PlayCount;
+            int R = (int)Math.Round(maxGames * kGames * kWins * kRoles * 5);
 
-            userTop.Add(new(winrate, user));
+            userTop.Add((user.User, R));
         }
 
-        userTop = userTop.OrderByDescending(x => x.Winrate).ToList();
+        userTop = userTop.OrderByDescending(x => x.rating).ToList();
 
         var statsByChat = new StatsByChat
         {
