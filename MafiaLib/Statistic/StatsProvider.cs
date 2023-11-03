@@ -49,7 +49,7 @@ public class StatsProvider(AppDbContext appDbContext)
         var averageGameDurationInSeconds = gameStats.Select(s => (s.GameEndDate - s.GameStartDate).TotalSeconds)
             .Average();
 
-        // ѕользователи чата, у которых больше 5 побед
+        // Get users with 6 wins or more
         var usersFromChat = appDbContext.GameResults
             .AsNoTracking()
             .Where(result => result.ChatId == chatId)
