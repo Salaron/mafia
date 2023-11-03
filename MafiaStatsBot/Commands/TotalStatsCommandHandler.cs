@@ -45,6 +45,6 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
                         {topTemplate}
                         """;
 
-        await botClient.SendTextMessageAsync(message.Chat.Id, template, cancellationToken: token);
+        await botClient.SendTextMessageAsync(message.Chat.Id, template, disableNotification: false, parseMode: ParseMode.MarkdownV2, cancellationToken: token);
     }
 }
