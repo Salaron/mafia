@@ -33,7 +33,7 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
         {
             var stat = stats.UserTop[i];
 
-            topTemplate.AppendLine($"{i + 1}. \\[{stat.user.Name}\\]\\(tg://user?id={stat.user.UserId}\\) {stat.rating}");
+            topTemplate.AppendLine($"{i + 1}. [{stat.user.Name}](tg://user?id={stat.user.UserId}\\) {stat.rating}");
         }
 
         var template = $"""
@@ -45,6 +45,6 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
                         {topTemplate}
                         """;
 
-        await botClient.SendTextMessageAsync(message.Chat.Id, template, disableNotification: false, parseMode: ParseMode.Markdown, cancellationToken: token);
+        await botClient.SendTextMessageAsync(message.Chat.Id, template, disableNotification: true, parseMode: ParseMode.Markdown, cancellationToken: token);
     }
 }
