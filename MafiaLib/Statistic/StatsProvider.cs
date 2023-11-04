@@ -64,7 +64,7 @@ public class StatsProvider(AppDbContext appDbContext)
         int maxRoles = usersWithStatsFromChat.Max(x => x.GameRoleCountMap.Count);
 
         // remove rarely playing users
-        usersWithStatsFromChat = usersWithStatsFromChat.Where(x => (double)x.PlayCount / maxGames > 0.05);
+        usersWithStatsFromChat = usersWithStatsFromChat.Where(x => (double)x.PlayCount / maxGames > 0.1);
 
         var userTop = new List<(TgUser user, int rating)>();
 

@@ -1,6 +1,5 @@
 using MafiaLib.Statistic;
 using MafiaStatsBot.Bot;
-using Npgsql;
 using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
