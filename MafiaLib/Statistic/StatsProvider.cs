@@ -70,7 +70,7 @@ public class StatsProvider(AppDbContext appDbContext)
 
         foreach (var user in usersWithStatsFromChat)
         {
-            double kGames = (double)user.PlayCount / maxGames;
+            double kGames = 0.5 * user.PlayCount / maxGames;
             double kWins = (double)user.WinCount / maxWins;
             double kRoles = 0.5 * user.GameRoleCountMap.Count / maxRoles;
 
