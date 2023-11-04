@@ -41,7 +41,7 @@ public class TotalStatsCommandHandler(StatsProvider statsProvider) : BaseCommand
                         Из них выиграла мафия: {stats.MafiaWinCount}
                         Среднее время одной игры: {stats.AverageGameDuration:c}
 
-                        Топ (больше 5 побед):
+                        Топ (среди часто играющих):
                         {topTemplate}
                         """;
 
