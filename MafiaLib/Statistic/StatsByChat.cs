@@ -8,5 +8,6 @@ public class StatsByChat
     public int TotalPlayCount { get; set; }
     public int MafiaWinCount { get; set; }
     public TimeSpan AverageGameDuration { get; set; }
-    public List<(TgUser user, int rating)> UserTop { get; set; }
+    public List<(TgUser user, int rating)> RatingUserTop { get; set; }
+    public List<(TgUser user, double winrate)> WinrateUserTop { get; set; }
 }

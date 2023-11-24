@@ -47,7 +47,7 @@ public class StatsProvider(AppDbContext appDbContext)
             .ToListAsync();
 
         if (!gameStats.Any())
-            return new StatsByChat() { UserTop = new() };
+            return new StatsByChat() { RatingUserTop = new(), WinrateUserTop = new() };
 
         var averageGameDurationInSeconds = gameStats.Select(s => (s.GameEndDate - s.GameStartDate).TotalSeconds)
             .Average();
@@ -63,10 +63,8 @@ public class StatsProvider(AppDbContext appDbContext)
         int maxWins = usersWithStatsFromChat.Max(x => x.WinCount);
         int maxRoles = usersWithStatsFromChat.Max(x => x.GameRoleCountMap.Count);
 
-        // remove rarely playing users
-        usersWithStatsFromChat = usersWithStatsFromChat.Where(x => (double)x.PlayCount / maxGames > 0.1);
-
         var userTop = new List<(TgUser user, int rating)>();
+        var winrates = new List<(TgUser user, double winrate)>();
 
         foreach (var user in usersWithStatsFromChat)
         {
@@ -75,8 +73,15 @@ public class StatsProvider(AppDbContext appDbContext)
             double kRoles = 0.5 * user.GameRoleCountMap.Count / maxRoles;
 
             int R = (int)Math.Round(maxGames * kGames * kWins * kRoles * 5);
-
+            
             userTop.Add((user.User, R));
+            
+            if (user.PlayCount >= 10)
+            {
+                double wr = Math.Round(100.0 * user.WinCount / user.PlayCount, 2);
+
+                winrates.Add((user.User, wr));
+            }
         }
 
         userTop = userTop.OrderByDescending(x => x.rating).ToList();
@@ -87,7 +92,8 @@ public class StatsProvider(AppDbContext appDbContext)
             TotalPlayCount = gameStats.Count,
             MafiaWinCount = gameStats.Count(s => s.IsMafiaWon),
             AverageGameDuration = TimeSpan.FromSeconds(averageGameDurationInSeconds),
-            UserTop = userTop
+            RatingUserTop = userTop,
+            WinrateUserTop = winrates
         };
 
         return statsByChat;
