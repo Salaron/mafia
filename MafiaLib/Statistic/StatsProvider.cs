@@ -85,6 +85,7 @@ public class StatsProvider(AppDbContext appDbContext)
         }
 
         userTop = userTop.OrderByDescending(x => x.rating).ToList();
+        winrates = winrates.OrderByDescending(x => x.winrate).ToList();
 
         var statsByChat = new StatsByChat
         {
