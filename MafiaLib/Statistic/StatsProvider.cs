@@ -46,14 +46,55 @@ public class StatsProvider(AppDbContext appDbContext)
             .Include(result => result.Roles)
             .ToListAsync();
 
+        if (!gameStats.Any())
+            return new StatsByChat() { RatingUserTop = new(), WinrateUserTop = new() };
+
         var averageGameDurationInSeconds = gameStats.Select(s => (s.GameEndDate - s.GameStartDate).TotalSeconds)
             .Average();
+        
+        // === Compute user top ===
+        // Get users and their statistic
+        var usersWithStatsFromChat = (await GetUsersAsync(chatId))
+            .Select(async x => await GetStatsAsync(chatId, x.UserId))
+            .Select(x => x.Result);
+
+        // find maximum of parameters (games, wins, number of roles) for all users
+        int maxGames = usersWithStatsFromChat.Max(x => x.PlayCount);
+        int maxWins = usersWithStatsFromChat.Max(x => x.WinCount);
+        int maxRoles = usersWithStatsFromChat.Max(x => x.GameRoleCountMap.Count);
+
+        var userTop = new List<(TgUser user, int rating)>();
+        var winrates = new List<(TgUser user, double winrate)>();
+
+        foreach (var user in usersWithStatsFromChat)
+        {
+            double kGames = 0.5 * user.PlayCount / maxGames;
+            double kWins = (double)user.WinCount / maxWins;
+            double kRoles = 0.5 * user.GameRoleCountMap.Count / maxRoles;
+
+            int R = (int)Math.Round(maxGames * kGames * kWins * kRoles * 5);
+            
+            userTop.Add((user.User, R));
+            
+            if (user.PlayCount >= 10)
+            {
+                double wr = Math.Round(100.0 * user.WinCount / user.PlayCount, 2);
+
+                winrates.Add((user.User, wr));
+            }
+        }
+
+        userTop = userTop.OrderByDescending(x => x.rating).ToList();
+        winrates = winrates.OrderByDescending(x => x.winrate).ToList();
+
         var statsByChat = new StatsByChat
         {
             ChatId = chatId,
             TotalPlayCount = gameStats.Count,
             MafiaWinCount = gameStats.Count(s => s.IsMafiaWon),
-            AverageGameDuration = TimeSpan.FromSeconds(averageGameDurationInSeconds)
+            AverageGameDuration = TimeSpan.FromSeconds(averageGameDurationInSeconds),
+            RatingUserTop = userTop,
+            WinrateUserTop = winrates
         };
 
         return statsByChat;
